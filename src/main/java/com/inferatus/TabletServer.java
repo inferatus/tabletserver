@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class TabletServer {
     private final String name;
-    Deque<Tablet> tablets;
+    private Deque<Tablet> tablets;
 
     public TabletServer(String name) {
         this.name = name;
@@ -22,6 +22,12 @@ public class TabletServer {
     }
 
     public Tablet popTablet() {
+        if(tablets.size() == 0) return null;
+
         return this.tablets.removeFirst();
+    }
+
+    public int tabletCount() {
+        return tablets.size();
     }
 }

@@ -3,18 +3,24 @@ package com.inferatus;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class MasterImpl extends Master {
+    Map<String, TabletServer> serverMap;
     Deque<TabletServer> servers;
     List<Tablet> tablets;
 
     public MasterImpl(int numTablets, List<String> serverNames) {
         super(numTablets, serverNames);
         servers = new ConcurrentLinkedDeque<>();
+        serverMap = new ConcurrentHashMap<>();
         tablets = new ArrayList<>();
         for(String serverName : serverNames) {
-            servers.add(new TabletServer(serverName));
+            TabletServer newServer = new TabletServer(serverName);
+            servers.add(newServer);
+            serverMap.put(serverName, newServer);
         }
 
         tablets = Tablet.generateTablets((long)numTablets);
@@ -37,7 +43,21 @@ public class MasterImpl extends Master {
 
     @Override
     public void removeServer(String serverName) {
+        if(!serverMap.containsKey(serverName)) {
+            // throw exception? Can't remove what doesn't exist, but it also doesn't affect run
+            return;
+        }
 
+        TabletServer server = serverMap.get(serverName);
+        servers.remove(server);
+        List<Tablet> orphanedTablets = new ArrayList<>();
+        Tablet tablet = server.popTablet();
+        while(tablet != null) {
+            orphanedTablets.add(tablet);
+            tablet = server.popTablet();
+        }
+
+        distributeTabletsAcrossServers(orphanedTablets);
     }
 
     private void distributeTabletsAcrossServers(List<Tablet> tabletsToAdd) {
