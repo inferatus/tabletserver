@@ -39,9 +39,9 @@ public class MasterImpl extends Master {
     @Override
     public void addServer(String serverName) {
         if(serverMap.containsKey(serverName)) {
-            // throw exception. server name should be unique identifier
-            return;
+            throw new IllegalArgumentException("Server name " + serverName + " already exists");
         }
+
         TabletServer server = new TabletServer(serverName);
         while(server.tabletCount() < servers.peekFirst().tabletCount()) {
             TabletServer largestServer = servers.removeLast();
@@ -50,12 +50,13 @@ public class MasterImpl extends Master {
         }
 
         servers.addFirst(server);
+        serverMap.put(serverName, server);
     }
 
     @Override
     public void removeServer(String serverName) {
         if(!serverMap.containsKey(serverName)) {
-            // throw exception? Can't remove what doesn't exist, but it also doesn't affect run
+            // Don't throw exception. Server to remove doesn't exist so allow flow to continue uninterrupted
             return;
         }
 
@@ -69,6 +70,7 @@ public class MasterImpl extends Master {
         }
 
         distributeTabletsAcrossServers(orphanedTablets);
+        serverMap.remove(serverName);
     }
 
     private void distributeTabletsAcrossServers(List<Tablet> tabletsToAdd) {
