@@ -2,17 +2,23 @@ package com.inferatus;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.*;
 
 public class MasterImplTest {
     static final String one = "one", two = "two", three = "three", four = "four";
     static final int numInitialTablets = 4, numInitialServers = 3;
-    List<String> serverNames = List.of(one, two, three);
+    List<String> serverNames;
     MasterImpl master;
 
     @Before
     public void initialize() {
+        serverNames = new ArrayList<>();
+        serverNames.add(one);
+        serverNames.add(two);
+        serverNames.add(three);
         master = new MasterImpl(numInitialTablets, serverNames);
     }
 
