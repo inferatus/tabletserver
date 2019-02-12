@@ -47,4 +47,13 @@ public class MasterImplTest {
         }
     }
 
+    @Test
+    public void testAddServer() {
+        master.addServer(four);
+
+        for(TabletServer server : master.servers) {
+            assertEquals(1, server.tabletCount());
+        }
+    }
+
 }

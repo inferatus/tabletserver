@@ -38,7 +38,18 @@ public class MasterImpl extends Master {
 
     @Override
     public void addServer(String serverName) {
+        if(serverMap.containsKey(serverName)) {
+            // throw exception. server name should be unique identifier
+            return;
+        }
+        TabletServer server = new TabletServer(serverName);
+        while(server.tabletCount() < servers.peekFirst().tabletCount()) {
+            TabletServer largestServer = servers.removeLast();
+            server.addTablet(largestServer.popTablet());
+            servers.addFirst(largestServer);
+        }
 
+        servers.addFirst(server);
     }
 
     @Override
