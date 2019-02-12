@@ -24,7 +24,7 @@ public class Tablet {
     }
 
     public Boolean containsValue(Long value) {
-        return value >= rangeStartInclusive && value <= rangeEndInclusive;
+        return value >= this.rangeStartInclusive && value <= this.rangeEndInclusive;
     }
 
     public static List<Tablet> generateTablets(Long numberTablets) {

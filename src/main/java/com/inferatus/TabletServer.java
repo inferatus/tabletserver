@@ -22,12 +22,12 @@ public class TabletServer {
     }
 
     public Tablet popTablet() {
-        if(tablets.size() == 0) return null;
+        if(this.tablets.size() == 0) return null;
 
         return this.tablets.removeFirst();
     }
 
     public int tabletCount() {
-        return tablets.size();
+        return this.tablets.size();
     }
 }

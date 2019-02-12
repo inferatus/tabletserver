@@ -11,50 +11,50 @@ public class MasterImpl extends Master {
 
     public MasterImpl(int numTablets, List<String> serverNames) {
         super(numTablets, serverNames);
-        manager = new TabletManager(numTablets);
-        servers = new ConcurrentLinkedDeque<>();
-        serverMap = new ConcurrentHashMap<>();
+        this.manager = new TabletManager(numTablets);
+        this.servers = new ConcurrentLinkedDeque<>();
+        this.serverMap = new ConcurrentHashMap<>();
         for(String serverName : serverNames) {
             TabletServer newServer = new TabletServer(serverName);
-            servers.add(newServer);
-            serverMap.put(serverName, newServer);
+            this.servers.add(newServer);
+            this.serverMap.put(serverName, newServer);
         }
 
-        distributeTabletsAcrossServers(manager.getAllTablets());
+        distributeTabletsAcrossServers(this.manager.getAllTablets());
     }
 
     @Override
     public String getServerForKey(long key) {
-        return manager.getTabletForKey(key).getServer().getName();
+        return this.manager.getTabletForKey(key).getServer().getName();
     }
 
     @Override
     public void addServer(String serverName) {
-        if(serverMap.containsKey(serverName)) {
+        if(this.serverMap.containsKey(serverName)) {
             throw new IllegalArgumentException("Server name " + serverName + " already exists");
         }
 
         TabletServer server = new TabletServer(serverName);
-        while(server.tabletCount() < servers.peekFirst().tabletCount()) {
-            TabletServer largestServer = servers.removeLast();
+        while(server.tabletCount() < this.servers.peekFirst().tabletCount()) {
+            TabletServer largestServer = this.servers.removeLast();
             server.addTablet(largestServer.popTablet());
-            servers.addFirst(largestServer);
+            this.servers.addFirst(largestServer);
         }
 
-        servers.addFirst(server);
-        serverMap.put(serverName, server);
-        serverNames.add(serverName);
+        this.servers.addFirst(server);
+        this.serverMap.put(serverName, server);
+        this.serverNames.add(serverName);
     }
 
     @Override
     public void removeServer(String serverName) {
-        if(!serverMap.containsKey(serverName)) {
+        if(!this.serverMap.containsKey(serverName)) {
             // Don't throw exception. Server to remove doesn't exist so allow flow to continue uninterrupted
             return;
         }
 
-        TabletServer server = serverMap.get(serverName);
-        servers.remove(server);
+        TabletServer server = this.serverMap.get(serverName);
+        this.servers.remove(server);
         List<Tablet> orphanedTablets = new ArrayList<>();
         Tablet tablet = server.popTablet();
         while(tablet != null) {
@@ -63,15 +63,15 @@ public class MasterImpl extends Master {
         }
 
         distributeTabletsAcrossServers(orphanedTablets);
-        serverMap.remove(serverName);
-        serverNames.remove(serverName);
+        this.serverMap.remove(serverName);
+        this.serverNames.remove(serverName);
     }
 
     private void distributeTabletsAcrossServers(Collection<Tablet> tabletsToAdd) {
         for(Tablet tablet : tabletsToAdd) {
-            TabletServer server = servers.removeFirst();
+            TabletServer server = this.servers.removeFirst();
             server.addTablet(tablet);
-            servers.addLast(server);
+            this.servers.addLast(server);
         }
     }
 }
