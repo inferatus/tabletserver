@@ -1,39 +1,31 @@
 package com.inferatus;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class MasterImpl extends Master {
     Map<String, TabletServer> serverMap;
     Deque<TabletServer> servers;
-    List<Tablet> tablets;
+    TabletManager manager;
 
     public MasterImpl(int numTablets, List<String> serverNames) {
         super(numTablets, serverNames);
+        manager = new TabletManager(numTablets);
         servers = new ConcurrentLinkedDeque<>();
         serverMap = new ConcurrentHashMap<>();
-        tablets = new ArrayList<>();
         for(String serverName : serverNames) {
             TabletServer newServer = new TabletServer(serverName);
             servers.add(newServer);
             serverMap.put(serverName, newServer);
         }
 
-        tablets = Tablet.generateTablets((long)numTablets);
-        distributeTabletsAcrossServers(tablets);
+        distributeTabletsAcrossServers(manager.getAllTablets());
     }
 
     @Override
     public String getServerForKey(long key) {
-        for(Tablet tablet : tablets) {
-            if(tablet.containsValue(key)) return tablet.getServer().getName();
-        }
-        //Todo this is an error case.  Throw exception?  Shouldn't be possible to get here
-        return null;
+        return manager.getTabletForKey(key).getServer().getName();
     }
 
     @Override
@@ -73,7 +65,7 @@ public class MasterImpl extends Master {
         serverMap.remove(serverName);
     }
 
-    private void distributeTabletsAcrossServers(List<Tablet> tabletsToAdd) {
+    private void distributeTabletsAcrossServers(Collection<Tablet> tabletsToAdd) {
         for(Tablet tablet : tabletsToAdd) {
             TabletServer server = servers.removeFirst();
             server.addTablet(tablet);

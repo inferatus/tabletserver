@@ -44,7 +44,7 @@ public class MasterImplTest {
             assertNotEquals(one, server.getName());
         }
 
-        for(Tablet tablet : master.tablets) {
+        for(Tablet tablet : master.manager.getAllTablets()) {
             assertNotEquals(one, tablet.getServer().getName());
         }
     }

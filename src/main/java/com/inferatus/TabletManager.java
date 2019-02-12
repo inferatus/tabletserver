@@ -1,5 +1,6 @@
 package com.inferatus;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,10 @@ public class TabletManager {
     public Tablet getTabletForKey(long key) {
         long position = key % (Long.MAX_VALUE / numTablets);
         return tabletMap.get(position);
+    }
+
+    public Collection<Tablet> getAllTablets() {
+        return tabletMap.values();
     }
 
 }
