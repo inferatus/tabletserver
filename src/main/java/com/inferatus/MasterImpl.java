@@ -43,6 +43,7 @@ public class MasterImpl extends Master {
 
         servers.addFirst(server);
         serverMap.put(serverName, server);
+        serverNames.add(serverName);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class MasterImpl extends Master {
 
         distributeTabletsAcrossServers(orphanedTablets);
         serverMap.remove(serverName);
+        serverNames.remove(serverName);
     }
 
     private void distributeTabletsAcrossServers(Collection<Tablet> tabletsToAdd) {
